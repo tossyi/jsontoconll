@@ -15,11 +15,13 @@ tagger = MeCab.Tagger("-Owakati -d /usr/local/lib/mecab/dic/mecab-ipadic-neologd
 # doccanoのjsonファイルを読み込む
 pdjson = pd.read_json(sys.argv[1],orient='records', lines=True)
 
-# "labels"の2次元配列の要素内を昇順に並び替える
-sorted_labels = [sorted(l) for l in pdjson['labels']]
 
-# key: word, value: tag
-labelword = {}
+# "labels"の2次元配列の要素内を昇順に並び替える
+pdjson['labels'] = [sorted(l) for l in pdjson['labels']]
+
+
+labels = []
+words = []
 
 newlabels = []
 
@@ -32,36 +34,50 @@ for index,row in pdjson.iterrows():
         start = label[0]
         end = label[1]
         tag = label[2]
-        # labelsの単語を格納
-        labelword[row['text'][start:end]] = tag
-
+        
+        # labelsと単語を格納
+        labels.append(tag)
+        words.append(row['text'][start:end]) 
     
     # 形態素解析したテキストへ置換
     pdjson.at[index,'text'] = parseline
 
     # labelsの単語とマッチした位置を新たにlabelsの位置とする
-    for w,tag in labelword.items():
+    position = 0
+    for w,tag in zip(words,labels):
+        
+        ws = tagger.parse(w).rstrip()
 
-        if(re.search(w,parseline) == None):
-        # 単語のマッチだと単語が形態素解析後に別れたときにマッチしない
-        # そのため、最初の文字と最後の文字の位置をマッチさせて、位置を取得する
-            span = re.search(r'{}.*{}'.format(w[0],w[-1]),parseline)
-        else:
-            span = re.search(w,parseline)
+        # wsにマッチする単語を検索
+        p = re.compile(re.escape(ws))
 
+        # ヒットした中を検索
+        for m in p.finditer(parseline):
+            # position以降を検索
+            if((position != 0) and (m.start() < position)):
+                continue
+            start = m.start()
+            end = m.end()
+            break
+            
         # 新しいlabelsを設定
         tmp_label = []
-        tmp_label.append(span.start())
-        tmp_label.append(span.end())
+        tmp_label.append(start)
+        tmp_label.append(end)
         tmp_label.append(str(tag))
         newlabels.append(tmp_label)
+        position = end
+
 
     # 形態素解析したテキストへ置換
-    pdjson.at[index,'labels'] = newlabels
+    pdjson.at[index,'labels'] = sorted(newlabels)
+
 
     # 辞書と配列の初期化
-    labelword = {}
+    labels = []
+    words = []
     newlabels = []
+    position = 0
         
 
 pdjson.to_json(sys.argv[2],force_ascii=False,orient='records',lines=True)
