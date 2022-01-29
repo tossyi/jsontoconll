@@ -21,23 +21,45 @@ pdjson = pd.read_json(sys.argv[1],orient='records', lines=True)
 # Sort the elements "labels" in ascending order
 pdjson['labels'] = [sorted(l) for l in pdjson['labels']]
 
+def PrintLine(parsew, pw, tag, mode, IOB):
+
+    # Perform processing when parsew is divided into two lines
+    if('\n' in parsew.rstrip() and mode == "crf"):
+        for line in parsew.splitlines():
+            if(IOB == "B"):
+                print("{}\tB-{}".format('\t'.join(line.rstrip().split(',')),tag))  
+            elif(IOB == "I"):
+                print("{}\tI-{}".format('\t'.join(line.rstrip().split(',')),tag)) 
+            else:
+                print("{}\tO".format('\t'.join(line.rstrip().split(',')))) 
+                            
+    else:
+        if(IOB == "B"):
+            print("{} B-{}".format(pw,tag)) if mode=="conll" else print("{}\tB-{}".format('\t'.join(parsew.rstrip().split(',')),tag))  
+        elif(IOB == "I"):
+            print("{} I-{}".format(pw,tag)) if mode=="conll" else print("{}\tI-{}".format('\t'.join(parsew.rstrip().split(',')),tag))  
+        else:
+            print("{} O".format(pw,tag)) if mode=="conll" else print("{}\tO".format('\t'.join(parsew.rstrip().split(','))))
+
+
 def PrintFormat(text,words,labels,mode):
 
     for w in text.split():
         flag = 0
         for tagw,tag in zip(words,labels):
-            parsew = tagger.parse(w)
-            
+            parsew = tagger.parse(w)            
+
             # match words and tag's words
             if(w == tagw):
-                headflag = 0
+                B = 0
                 for pw in parsew.split():
-                    parsew2 = tagger2.parse(pw)      
-                    if(headflag==0):
-                        print("{} B-{}".format(pw,tag)) if mode=="conll" else print("{}\tB-{}".format('\t'.join(parsew2.rstrip().split(',')),tag))
-                        headflag = 1
+                    parsew2 = tagger2.parse(pw)    
+
+                    if(B==0):
+                        PrintLine(parsew2, pw, tag, mode, "B")
+                        B = 1
                     else:
-                        print("{} I-{}".format(pw,tag)) if mode=="conll" else print("{}\tI-{}".format('\t'.join(parsew2.rstrip().split(',')),tag))           
+                        PrintLine(parsew2, pw, tag, mode, "I")
 
                 flag = 1
                 break
@@ -45,11 +67,8 @@ def PrintFormat(text,words,labels,mode):
         # word is not tag
         if(flag==0):
             for pw in parsew.split():
-                parsew2 = tagger2.parse(pw)    
-                print("{} O".format(pw)) if mode=="conll" else print("{}\tO".format('\t'.join(parsew2.rstrip().split(','))))  
-
-
-
+                parsew2 = tagger2.parse(pw)     
+                PrintLine(parsew2, pw, tag, mode, "O")
 
 def WordsLabels(text,labels):
 
