@@ -11,6 +11,8 @@ import sys
 
 
 tagger = MeCab.Tagger("-Owakati -d /usr/local/lib/mecab/dic/mecab-ipadic-neologd")
+tagger2 = MeCab.Tagger("--eos-format= -d /usr/local/lib/mecab/dic/mecab-ipadic-neologd")
+
 
 # Read jsonl file from doccano
 pdjson = pd.read_json(sys.argv[1],orient='records', lines=True)
@@ -19,31 +21,32 @@ pdjson = pd.read_json(sys.argv[1],orient='records', lines=True)
 # Sort the elements "labels" in ascending order
 pdjson['labels'] = [sorted(l) for l in pdjson['labels']]
 
-def PrintConll(text,words,labels):
+def PrintFormat(text,words,labels,mode):
 
     for w in text.split():
         flag = 0
         for tagw,tag in zip(words,labels):
-
-            # morphological analysis
             parsew = tagger.parse(w)
             
             # match words and tag's words
             if(w == tagw):
                 headflag = 0
                 for pw in parsew.split():
+                    parsew2 = tagger2.parse(pw)      
                     if(headflag==0):
-                        print("{} B-{}".format(pw,tag))
+                        print("{} B-{}".format(pw,tag)) if mode=="conll" else print("{}\tB-{}".format('\t'.join(parsew2.rstrip().split(',')),tag))
                         headflag = 1
                     else:
-                        print("{} I-{}".format(pw,tag))                
+                        print("{} I-{}".format(pw,tag)) if mode=="conll" else print("{}\tI-{}".format('\t'.join(parsew2.rstrip().split(',')),tag))           
+
                 flag = 1
                 break
             
         # word is not tag
         if(flag==0):
             for pw in parsew.split():
-                print("{} O".format(pw))
+                parsew2 = tagger2.parse(pw)    
+                print("{} O".format(pw)) if mode=="conll" else print("{}\tO".format('\t'.join(parsew2.rstrip().split(','))))  
 
 
 
@@ -92,7 +95,7 @@ for index,row in pdjson.iterrows():
     # Combine multiple consecutive blanks into one
     row['text'] = " ".join(row['text'].split())
 
-    # Print Conll
-    PrintConll(row['text'],words,labels)
+    # Print Format
+    PrintFormat(row['text'],words,labels,sys.argv[2])
     print("")
 
