@@ -39,15 +39,19 @@ def PrintLine(parsew, pw, tag, mode, IOB):
 
 
 def PrintFormat(text, words, labels, mode):
+    # skip in case of labels = []
+    if(len(labels) == 0):
+        return
 
     for w in text.split():
         flag = 0
+        parsew = tagger.parse(w)
         for tagw, tag in zip(words, labels):
-            parsew = tagger.parse(w)
 
             # match words and tag's words
             if w == tagw:
                 B = 0
+
                 for pw in parsew.split():
                     parsew2 = tagger2.parse(pw)
 
@@ -92,13 +96,13 @@ if __name__ == "__main__":
     pdjson = pd.read_json(sys.argv[1], orient="records", lines=True)
 
     # Sort the elements "labels" in ascending order
-    pdjson["labels"] = [sorted(l) for l in pdjson["labels"]]
+    pdjson["label"] = [sorted(l) for l in pdjson["label"]]
 
     for index, row in pdjson.iterrows():
         position = 0
 
         # Store tag's words and labels
-        words, labels = WordsLabels(row["text"], row["labels"])
+        words, labels = WordsLabels(row["text"], row["label"])
 
         # Remain tag's words and insert space before and after the words
         for w, tag in zip(words, labels):
