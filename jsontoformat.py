@@ -42,7 +42,6 @@ def PrintFormat(text, words, labels, mode):
     # skip in case of labels = []
     if(len(labels) == 0):
         return
-
     for w in text.split():
         flag = 0
         parsew = tagger.parse(w)
@@ -62,6 +61,9 @@ def PrintFormat(text, words, labels, mode):
                         PrintLine(parsew2, pw, tag, mode, "I")
 
                 flag = 1
+                # delete tagw, tag from list
+                words.remove(tagw)
+                labels.remove(tag)
                 break
 
         # word is not tag
