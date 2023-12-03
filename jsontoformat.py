@@ -12,7 +12,6 @@ from tokenizers.trainers import WordPieceTrainer
 
 
 def PrintLine(parsew, pw, tag, mode, IOB):
-
     # Perform processing when parsew is divided into two lines
     if "\n" in parsew.rstrip() and mode == "crf":
         for line in parsew.splitlines():
@@ -40,13 +39,12 @@ def PrintLine(parsew, pw, tag, mode, IOB):
 
 def PrintFormat(text, words, labels, mode):
     # skip in case of labels = []
-    if(len(labels) == 0):
+    if len(labels) == 0:
         return
     for w in text.split():
         flag = 0
         parsew = tagger.parse(w)
         for tagw, tag in zip(words, labels):
-
             # match words and tag's words
             if w == tagw:
                 B = 0
@@ -74,7 +72,6 @@ def PrintFormat(text, words, labels, mode):
 
 
 def WordsLabels(text, labels):
-
     words = []
     labels_list = []
 
