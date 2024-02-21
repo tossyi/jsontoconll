@@ -4,9 +4,9 @@ JsonToConll can transform [doccano](https://github.com/doccano/doccano) jsonl fi
 # Usage
 ```
 # json to conll
-python3 jsontoformat.py ./data/admin_new.jsonl conll > ./data/dataset.conll
+poetry run python jsontoformat.py ./data/admin_new.jsonl conll > ./data/dataset.conll
 
 # json to crf format
-python3 jsontoformat.py ./data/admin_new.jsonl crf > ./data/dataset.txt
+poetry run python jsontoformat.py ./data/admin_new.jsonl crf > ./data/dataset.txt
 ```
 
