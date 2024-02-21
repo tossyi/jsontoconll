@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "jsontoconll"
+version = "0.1.0"
+description = ""
+authors = ["ToshihikoSakai <toshiwork5630@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+mecab-python3 = "^1.0.8"
+pandas = "^2.2.0"
+tokenizers = "^0.15.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
